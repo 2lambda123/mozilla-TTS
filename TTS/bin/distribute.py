@@ -8,6 +8,7 @@ import time
 import subprocess
 import argparse
 import torch
+from security import safe_command
 
 
 def main():
@@ -57,7 +58,7 @@ def main():
         my_env["PYTHON_EGG_CACHE"] = "/tmp/tmp{}".format(i)
         command[-1] = '--rank={}'.format(i)
         stdout = None if i == 0 else open(os.devnull, 'w')
-        p = subprocess.Popen(['python3'] + command, stdout=stdout, env=my_env)
+        p = safe_command.run(subprocess.Popen, ['python3'] + command, stdout=stdout, env=my_env)
         processes.append(p)
         print(command)
 
