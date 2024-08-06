@@ -28,6 +28,7 @@ import pandas
 from absl import logging
 import tensorflow as tf
 import soundfile as sf
+from security import safe_command
 
 gfile = tf.compat.v1.gfile
 
@@ -83,7 +84,7 @@ def download_and_extract(directory, subset, urls):
             if os.path.exists(zip_filepath):
                 continue
             logging.info("Downloading %s to %s" % (url, zip_filepath))
-            subprocess.call('wget %s --user %s --password %s -O %s' %
+            safe_command.run(subprocess.call, 'wget %s --user %s --password %s -O %s' %
                             (url, USER["user"], USER["password"], zip_filepath), shell=True)
 
             statinfo = os.stat(zip_filepath)
@@ -94,7 +95,7 @@ def download_and_extract(directory, subset, urls):
         # concatenate all parts into zip files
         if ".zip" not in zip_filepath:
             zip_filepath = "_".join(zip_filepath.split("_")[:-1])
-            subprocess.call('cat %s* > %s.zip' %
+            safe_command.run(subprocess.call, 'cat %s* > %s.zip' %
                             (zip_filepath, zip_filepath), shell=True)
             zip_filepath += ".zip"
         extract_path = zip_filepath.strip(".zip")
@@ -107,7 +108,7 @@ def download_and_extract(directory, subset, urls):
         with zipfile.ZipFile(zip_filepath, "r") as zfile:
             zfile.extractall(directory)
             extract_path_ori = os.path.join(directory, zfile.infolist()[0].filename)
-            subprocess.call('mv %s %s' % (extract_path_ori, extract_path), shell=True)
+            safe_command.run(subprocess.call, 'mv %s %s' % (extract_path_ori, extract_path), shell=True)
     finally:
         # gfile.Remove(zip_filepath)
         pass
@@ -121,7 +122,7 @@ def exec_cmd(cmd):
         int, the return code.
     """
     try:
-        retcode = subprocess.call(cmd, shell=True)
+        retcode = safe_command.run(subprocess.call, cmd, shell=True)
         if retcode < 0:
             logging.info(f"Child was terminated by signal {retcode}")
     except OSError as e:

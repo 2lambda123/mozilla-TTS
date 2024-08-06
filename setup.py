@@ -13,6 +13,7 @@ import setuptools.command.develop
 from setuptools import find_packages, setup
 from distutils.extension import Extension
 from Cython.Build import cythonize
+from security import safe_command
 
 # parameters for wheeling server.
 parser = argparse.ArgumentParser(add_help=False, allow_abbrev=False)
@@ -83,7 +84,7 @@ if 'bdist_wheel' in unknown_args and args.checkpoint and args.model_config:
 
 
 def pip_install(package_name):
-    subprocess.call([sys.executable, '-m', 'pip', 'install', package_name])
+    safe_command.run(subprocess.call, [sys.executable, '-m', 'pip', 'install', package_name])
 
 
 requirements = open(os.path.join(cwd, 'requirements.txt'), 'r').readlines()
